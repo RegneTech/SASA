@@ -1098,13 +1098,13 @@
         }
 
         // Survey Submission Functions
-        function submitMainSurvey(event) {
+        async function submitMainSurvey(event) {
             event.preventDefault();
-
+            
             const formData = new FormData(event.target);
             const responses = {};
-
-            // Collect all responses
+            
+            // Recopilar respuestas
             for (let [key, value] of formData.entries()) {
                 if (responses[key]) {
                     if (Array.isArray(responses[key])) {
@@ -1116,33 +1116,31 @@
                     responses[key] = value;
                 }
             }
-
-            // Validate required fields
-            const requiredFields = ['q1', 'q2', 'q3', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10'];
-            const missingFields = requiredFields.filter(field => !responses[field]);
-
-            if (missingFields.length > 0) {
-                showMessage('Por favor, completa todas las preguntas obligatorias', 'error');
-                return;
+            
+            try {
+                const response = await fetch('/api/surveys/1/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ responses })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    appState.completedSurveys.add('main');
+                    appState.balance += 5;
+                    updateBalance();
+                    updateSurveyStates();
+                    closeSurveyModal();
+                    showMessage('¡Encuesta completada! +5 EUR añadidos a tu saldo', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                showMessage(error.message, 'error');
             }
-
-            // Save responses (in a real app, this would go to the server)
-            console.log('Main survey responses:', responses);
-
-            // Mark as completed and add reward
-            appState.completedSurveys.add('main');
-            appState.balance += 5;
-
-            // Save to localStorage
-            localStorage.setItem('completedSurveys', JSON.stringify([...appState.completedSurveys]));
-            localStorage.setItem('userBalance', appState.balance.toString());
-
-            // Update UI
-            updateBalance();
-            updateSurveyStates();
-            closeSurveyModal();
-
-            showMessage('¡Encuesta completada! +5 EUR añadidos a tu saldo', 'success');
         }
 
         function submitAdditionalSurvey(event, surveyType) {

@@ -30,7 +30,7 @@ app.use(helmet({
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-app-name.up.railway.app'] 
+    ? ['sasa-production-78bd.up.railway.app'] 
     : ['http://localhost:3000'],
   credentials: true
 }));

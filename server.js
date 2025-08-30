@@ -147,7 +147,6 @@ app.post('/api/surveys/:id/submit', async (req, res) => {
 // Inicializar base de datos en el primer arranque
 async function initializeDatabase() {
   try {
-    // Verificar si las tablas existen
     const result = await pool.query(`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
@@ -158,10 +157,9 @@ async function initializeDatabase() {
     
     if (!result.rows[0].exists) {
       console.log('Inicializando base de datos...');
-      // Aquí podrías ejecutar tu schema.sql si es necesario
-      // const fs = require('fs');
-      // const schemaSQL = fs.readFileSync('schema.sql', 'utf8');
-      // await pool.query(schemaSQL);
+      const fs = require('fs');
+      const schemaSQL = fs.readFileSync('schema.sql', 'utf8');
+      await pool.query(schemaSQL);
       console.log('Base de datos inicializada');
     }
   } catch (error) {
